@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { Download, Camera, Video } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
@@ -117,6 +116,16 @@ export default function App() {
             </button>
           </div>
         )}
+
+        {/* Hier wird das iFrame für Vidmix eingebunden */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-white mb-4 text-center">VidMix</h2>
+          <iframe
+            src="https://vidmix.app"
+            className="w-full h-[600px] rounded-lg border border-gray-700 shadow-lg"
+          ></iframe>
+        </div>
+
       </div>
       <Toaster position="bottom-center" />
     </div>
