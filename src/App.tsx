@@ -1,6 +1,6 @@
 
 import { useState, useCallback } from 'react';
-import { Download, VideoCamera } from 'lucide-react';
+import { Download, Camera, Video } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 import { UrlInput } from './components/UrlInput';
 import { VideoList } from './components/VideoList';
@@ -89,7 +89,7 @@ export default function App() {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12 glass-panel p-8">
           <div className="flex justify-center mb-4">
-            <VideoCamera size={48} className="text-blue-400 float-animation" />
+            <Video size={48} className="text-blue-400 float-animation" />
           </div>
           <h1 className="text-4xl font-bold text-white mb-2 bg-gradient-to-r from-blue-400 to-indigo-400 inline-block text-transparent bg-clip-text">
             YouTube Video Combiner
