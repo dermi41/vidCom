@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { unlink } from 'fs/promises';
+import { unlink, readdirSync } from 'fs';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
 import { fileURLToPath } from 'url';
@@ -17,9 +17,35 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Temp directory for video processing
-const TEMP_DIR = '/tmp/ffmpeg';  // Dein temporäres Verzeichnis
+const TEMP_DIR = '/tmp/ffmpeg';
 const MAX_VIDEOS = 5; // Maximum number of videos to combine
 const MAX_VIDEO_DURATION = 600; // Maximum duration per video in seconds (10 minutes)
+
+// Helper function to get the correct path to yt-dlp and ffmpeg
+function getBinaryPath(binaryName) {
+  const dirs = readdirSync(TEMP_DIR);
+
+  // Find the directory that starts with 'ffmpeg-' and contains 'static'
+  const ffmpegSubDir = dirs.find(dir => dir.startsWith('ffmpeg-') && dir.includes('static'));
+  if (!ffmpegSubDir) {
+    throw new Error('FFmpeg directory not found!');
+  }
+
+  // Return the correct path to the requested binary
+  if (binaryName === 'yt-dlp') {
+    return join(TEMP_DIR, ffmpegSubDir, 'bin', 'yt-dlp');
+  } else if (binaryName === 'ffmpeg') {
+    return join(TEMP_DIR, ffmpegSubDir, 'ffmpeg');
+  } else if (binaryName === 'ffprobe') {
+    return join(TEMP_DIR, ffmpegSubDir, 'ffprobe');
+  } else {
+    throw new Error('Unknown binary name');
+  }
+}
+
+app.use(cors());
+app.use(express.json());
+app.use(express.static(join(__dirname, '../dist')));
 
 // Helper function to clean up temporary files
 async function cleanupFiles(files) {
@@ -35,8 +61,7 @@ async function cleanupFiles(files) {
 // Helper function to get video duration using ffprobe
 async function getVideoDuration(filePath) {
   try {
-    // Verwende den Pfad zu ffprobe und ffmpeg im TEMP_DIR Verzeichnis
-    const ffprobePath = join(TEMP_DIR, 'ffmpeg-*-static', 'ffprobe');
+    const ffprobePath = getBinaryPath('ffprobe'); // Use the new dynamic path function
     const { stdout } = await execAsync(
       `"${ffprobePath}" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
     );
@@ -50,10 +75,6 @@ async function getVideoDuration(filePath) {
     throw new Error(`Failed to get video duration: ${error.message}`);
   }
 }
-
-app.use(cors());
-app.use(express.json());
-app.use(express.static(join(__dirname, '../dist')));
 
 app.post('/api/combine', async (req, res) => {
   const { videos } = req.body;
@@ -77,8 +98,7 @@ app.post('/api/combine', async (req, res) => {
       const videoPath = join(TEMP_DIR, `${sessionId}_${index}.mp4`);
       tempFiles.push(videoPath);
 
-      // Verwende den vollständigen Pfad zu yt-dlp im TEMP_DIR Verzeichnis
-      const ytDlpPath = join(TEMP_DIR, 'ffmpeg-*-static', 'bin', 'yt-dlp');
+      const ytDlpPath = getBinaryPath('yt-dlp'); // Use the new dynamic path function
       console.log(`Downloading video ${index + 1}/${videos.length}...`);
       await execAsync(
         `"${ytDlpPath}" -f "best[height<=720]" -o "${videoPath}" "https://www.youtube.com/watch?v=${video.id}"`
@@ -97,8 +117,7 @@ app.post('/api/combine', async (req, res) => {
     // Write concat list file
     await execAsync(`echo '${concatContent}' > "${concatListPath}"`);
 
-    // Verwende den vollständigen Pfad zu ffmpeg im TEMP_DIR Verzeichnis
-    const ffmpegPath = join(TEMP_DIR, 'ffmpeg-*-static', 'ffmpeg');
+    const ffmpegPath = getBinaryPath('ffmpeg'); // Use the new dynamic path function
     console.log('Combining videos...');
     await execAsync(
       `"${ffmpegPath}" -f concat -safe 0 -i "${concatListPath}" -vf "fps=30,format=yuv420p" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 192k -strict experimental "${outputPath}"`
