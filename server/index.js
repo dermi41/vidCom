@@ -39,7 +39,7 @@ function getBinaryPath(binaryName) {
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(join(__dirname, '../dist')));
+app.use(express.static(join(__dirname, './')));
 
 // Helper function to clean up temporary files
 async function cleanupFiles(files) {
@@ -143,7 +143,7 @@ app.post('/api/combine', async (req, res) => {
 
 // Catch-all route to serve the frontend
 app.get('*', (req, res) => {
-  res.sendFile(join(__dirname, '../dist/index.html'));
+  res.sendFile(join(__dirname, './index.html'));
 });
 
 app.listen(port, '0.0.0.0', () => {

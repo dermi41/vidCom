@@ -40,7 +40,7 @@ export const UrlInput: React.FC<UrlInputProps> = ({ onAdd }) => {
               setError('');
             }}
             placeholder="Paste YouTube URL here..."
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-black"
           />
           {error && (
             <p className="mt-1 text-sm text-red-500">{error}</p>
