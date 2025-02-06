@@ -23,21 +23,14 @@ const MAX_VIDEO_DURATION = 600; // Maximum duration per video in seconds (10 min
 
 // Helper function to get the correct path to yt-dlp and ffmpeg
 function getBinaryPath(binaryName) {
-  const dirs = readdirSync(TEMP_DIR);
+  const binDir = join(__dirname, '..', 'bin'); // Pfad zu deinem bin-Ordner
 
-  // Find the directory that starts with 'ffmpeg-' and contains 'static'
-  const ffmpegSubDir = dirs.find(dir => dir.startsWith('ffmpeg-') && dir.includes('static'));
-  if (!ffmpegSubDir) {
-    throw new Error('FFmpeg directory not found!');
-  }
-
-  // Return the correct path to the requested binary
   if (binaryName === 'yt-dlp') {
-    return join(TEMP_DIR, ffmpegSubDir, 'bin', 'yt-dlp');
+    return join(binDir, 'yt-dlp');
   } else if (binaryName === 'ffmpeg') {
-    return join(TEMP_DIR, ffmpegSubDir, 'ffmpeg');
+    return join(binDir, 'ffmpeg');
   } else if (binaryName === 'ffprobe') {
-    return join(TEMP_DIR, ffmpegSubDir, 'ffprobe');
+    return join(binDir, 'ffprobe');
   } else {
     throw new Error('Unknown binary name');
   }
