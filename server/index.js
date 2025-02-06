@@ -39,11 +39,10 @@ async function cleanupFiles(files) {
 // Helper function to get video duration using ffprobe
 async function getVideoDuration(filePath) {
   try {
-    // First check if ffprobe is available
-    await execAsync('which ffprobe');
-
+    // Use the full path to ffprobe in the custom bin directory
+    const ffprobePath = join(process.env.HOME, 'bin', 'ffprobe');
     const { stdout } = await execAsync(
-      `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
+      `"${ffprobePath}" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
     );
     const duration = parseFloat(stdout);
     if (isNaN(duration)) {
@@ -51,9 +50,6 @@ async function getVideoDuration(filePath) {
     }
     return duration;
   } catch (error) {
-    if (error.message.includes('which ffprobe')) {
-      throw new Error('FFmpeg/FFprobe is not installed. Please add it via the System Dependencies pane.');
-    }
     console.error('Error getting video duration:', error);
     throw new Error(`Failed to get video duration: ${error.message}`);
   }
@@ -81,10 +77,11 @@ app.post('/api/combine', async (req, res) => {
       const videoPath = join(TEMP_DIR, `${sessionId}_${index}.mp4`);
       tempFiles.push(videoPath);
 
-      // Download video using Python yt-dlp
+      // Use the full path to yt-dlp in the custom bin directory
+      const ytDlpPath = join(process.env.HOME, 'bin', 'yt-dlp');
       console.log(`Downloading video ${index + 1}/${videos.length}...`);
       await execAsync(
-        `python3 -m yt_dlp -f "best[height<=720]" -o "${videoPath}" "https://www.youtube.com/watch?v=${video.id}"`
+        `"${ytDlpPath}" -f "best[height<=720]" -o "${videoPath}" "https://www.youtube.com/watch?v=${video.id}"`
       );
 
       // Check video duration
@@ -100,10 +97,11 @@ app.post('/api/combine', async (req, res) => {
     // Write concat list file
     await execAsync(`echo '${concatContent}' > "${concatListPath}"`);
 
-    // Combine videos using FFmpeg
+    // Use the full path to ffmpeg in the custom bin directory
+    const ffmpegPath = join(process.env.HOME, 'bin', 'ffmpeg');
     console.log('Combining videos...');
     await execAsync(
-      `ffmpeg -f concat -safe 0 -i "${concatListPath}" -vf "fps=30,format=yuv420p" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 192k -strict experimental "${outputPath}"`
+      `"${ffmpegPath}" -f concat -safe 0 -i "${concatListPath}" -vf "fps=30,format=yuv420p" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 192k -strict experimental "${outputPath}"`
     );
 
     // Set up headers for file download
@@ -128,6 +126,11 @@ app.post('/api/combine', async (req, res) => {
       details: error.message
     });
   }
+});
+
+// Catch-all route to serve the frontend
+app.get('*', (req, res) => {
+  res.sendFile(join(__dirname, '../dist/index.html'));
 });
 
 app.listen(port, '0.0.0.0', () => {

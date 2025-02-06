@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -9,8 +8,15 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    allowedHosts: [
-      '8c07d244-c093-47bd-b0fa-c5f6704f7a4f-00-356mdirsccq1z.worf.replit.dev'
-    ]
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true
+      }
+    }
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets'
   }
 });
