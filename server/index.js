@@ -17,13 +17,9 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 // Temp directory for video processing
-const TEMP_DIR = '/tmp';
+const TEMP_DIR = '/tmp/ffmpeg';  // Dein temporäres Verzeichnis
 const MAX_VIDEOS = 5; // Maximum number of videos to combine
 const MAX_VIDEO_DURATION = 600; // Maximum duration per video in seconds (10 minutes)
-
-app.use(cors());
-app.use(express.json());
-app.use(express.static(join(__dirname, '../dist')));
 
 // Helper function to clean up temporary files
 async function cleanupFiles(files) {
@@ -39,8 +35,8 @@ async function cleanupFiles(files) {
 // Helper function to get video duration using ffprobe
 async function getVideoDuration(filePath) {
   try {
-    // Use the full path to ffprobe in the custom bin directory
-    const ffprobePath = join(process.env.HOME, 'bin', 'ffprobe');
+    // Verwende den Pfad zu ffprobe und ffmpeg im TEMP_DIR Verzeichnis
+    const ffprobePath = join(TEMP_DIR, 'ffmpeg-*-static', 'ffprobe');
     const { stdout } = await execAsync(
       `"${ffprobePath}" -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
     );
@@ -54,6 +50,10 @@ async function getVideoDuration(filePath) {
     throw new Error(`Failed to get video duration: ${error.message}`);
   }
 }
+
+app.use(cors());
+app.use(express.json());
+app.use(express.static(join(__dirname, '../dist')));
 
 app.post('/api/combine', async (req, res) => {
   const { videos } = req.body;
@@ -77,8 +77,8 @@ app.post('/api/combine', async (req, res) => {
       const videoPath = join(TEMP_DIR, `${sessionId}_${index}.mp4`);
       tempFiles.push(videoPath);
 
-      // Use the full path to yt-dlp in the custom bin directory
-      const ytDlpPath = join(process.env.HOME, 'bin', 'yt-dlp');
+      // Verwende den vollständigen Pfad zu yt-dlp im TEMP_DIR Verzeichnis
+      const ytDlpPath = join(TEMP_DIR, 'ffmpeg-*-static', 'bin', 'yt-dlp');
       console.log(`Downloading video ${index + 1}/${videos.length}...`);
       await execAsync(
         `"${ytDlpPath}" -f "best[height<=720]" -o "${videoPath}" "https://www.youtube.com/watch?v=${video.id}"`
@@ -97,8 +97,8 @@ app.post('/api/combine', async (req, res) => {
     // Write concat list file
     await execAsync(`echo '${concatContent}' > "${concatListPath}"`);
 
-    // Use the full path to ffmpeg in the custom bin directory
-    const ffmpegPath = join(process.env.HOME, 'bin', 'ffmpeg');
+    // Verwende den vollständigen Pfad zu ffmpeg im TEMP_DIR Verzeichnis
+    const ffmpegPath = join(TEMP_DIR, 'ffmpeg-*-static', 'ffmpeg');
     console.log('Combining videos...');
     await execAsync(
       `"${ffmpegPath}" -f concat -safe 0 -i "${concatListPath}" -vf "fps=30,format=yuv420p" -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 192k -strict experimental "${outputPath}"`
