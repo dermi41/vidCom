@@ -20,6 +20,7 @@ const port = process.env.PORT || 3000;
 const TEMP_DIR = '/tmp/ffmpeg';
 const MAX_VIDEOS = 5; // Maximum number of videos to combine
 const MAX_VIDEO_DURATION = 600; // Maximum duration per video in seconds (10 minutes)
+const COOKIES_PATH = join(__dirname, '..', 'config', 'cookies.txt'); // Pfad zu den exportierten Cookies
 
 // Helper function to get the correct path to yt-dlp and ffmpeg
 function getBinaryPath(binaryName) {
@@ -94,7 +95,7 @@ app.post('/api/combine', async (req, res) => {
       const ytDlpPath = getBinaryPath('yt-dlp'); // Use the new dynamic path function
       console.log(`Downloading video ${index + 1}/${videos.length}...`);
       await execAsync(
-        `"${ytDlpPath}" -f "best[height<=720]" -o "${videoPath}" "https://www.youtube.com/watch?v=${video.id}"`
+        `"${ytDlpPath}" -f "best[height<=720]" --cookies "${COOKIES_PATH}" -o "${videoPath}" "https://www.youtube.com/watch?v=${video.id}"`
       );
 
       // Check video duration
