@@ -12,8 +12,6 @@ services:
       chmod +x /bin/ffmpeg && \
       chmod +x /bin/ffprobe && \
       chmod +x /bin/yt-dlp && \
-      chmod +x install_deps.sh && \
-      ./install_deps.sh && \
       npm install && \
       npm run build
     startCommand: node server/index.js
