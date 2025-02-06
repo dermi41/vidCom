@@ -41,7 +41,7 @@ async function getVideoDuration(filePath) {
   try {
     // First check if ffprobe is available
     await execAsync('which ffprobe');
-    
+
     const { stdout } = await execAsync(
       `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${filePath}"`
     );
