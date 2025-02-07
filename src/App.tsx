@@ -118,13 +118,14 @@ export default function App() {
         )}
 
         {/* Hier wird das iFrame für Vidmix eingebunden */}
-        <div className="flex-grow relative mt-4">
-        <iframe
-          src="https://vidmix.app"
-          className="absolute inset-0 w-full h-full rounded-lg border border-gray-700 shadow-lg"
-		  allow="clipboard-write; fullscreen; download"
-        ></iframe>
-		</div>
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-white mb-4 text-center">VidMix</h2>
+          <iframe
+            src="https://vidmix.app"
+            className="w-full h-[600px] rounded-lg border border-gray-700 shadow-lg"
+			allow="clipboard-write; fullscreen; download"
+          ></iframe>
+        </div>
 
       </div>
       <Toaster position="bottom-center" />
