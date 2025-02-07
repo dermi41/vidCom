@@ -118,13 +118,12 @@ export default function App() {
         )}
 
         {/* Hier wird das iFrame für Vidmix eingebunden */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold text-white mb-4 text-center">VidMix</h2>
+        <div className="mt-12">     
           <iframe
-            src="https://vidmix.app"
-            className="w-full h-[600px] rounded-lg border border-gray-700 shadow-lg"
-			allow="clipboard-write; fullscreen; download"
-          ></iframe>
+			src="https://vidmix.app"
+			className="w-full h-[600px] rounded-lg border border-gray-700 shadow-lg"
+			allow="clipboard-write; clipboard-read; fullscreen; download; autoplay; encrypted-media"
+		  ></iframe>
         </div>
 
       </div>
